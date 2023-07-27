@@ -1,0 +1,28 @@
+
+name: CI
+
+on: [push]
+
+jobs:
+  pylint:
+    runs-on: ubuntu-latest
+    name: Linting with Pylint
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: environment.yml
+      - run: |
+          conda info
+          pylint tensorli.py
+  black:
+    runs-on: ubuntu-latest
+    name: Formatting with black
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: environment.yml
+      - run: |
+          conda info
+          black tensorli.py
