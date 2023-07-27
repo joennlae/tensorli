@@ -7,8 +7,11 @@ jobs:
   pylint:
     runs-on: ubuntu-latest
     name: Linting with Pylint
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: environment.yml
@@ -20,8 +23,11 @@ jobs:
   black:
     runs-on: ubuntu-latest
     name: Formatting with black
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: environment.yml
