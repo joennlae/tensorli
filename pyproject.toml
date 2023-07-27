@@ -1,0 +1,17 @@
+[tool.pylint]
+max-line-length = 100
+disable = [
+    "C0103", # Variable name doesn't conform to snake_case naming style (invalid-name)
+    "C0114", # Missing module docstring (missing-module-docstring)
+    "C0115", # Missing class docstring (missing-class-docstring)
+    "C0116", # Missing function or method docstring (missing-function-docstring)
+    "R0903", # Too few public methods (1/2) (too-few-public-methods)
+    "R0913", # Too many arguments (6/5) (too-many-arguments)
+    "W0105", # String statement has no effect (pointless-string-statement)
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov --cov-report html --cov-report term-missing"
+
+[tool.black]
+line-length = 100
