@@ -1,0 +1,10 @@
+name: tensorli 
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - torchaudio
+  - pytorch::pytorch
+  - torchvision
+  - black
+  - pylint
