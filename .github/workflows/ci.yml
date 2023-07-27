@@ -36,3 +36,19 @@ jobs:
         run: |
           conda activate tensorli
           black tensorli.py test/*.py
+  tests:
+    runs-on: ubuntu-latest
+    name: Running tests with pytest
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: environment.yml
+          activate-environment: tensorli
+      - name: Running tests with pytest
+        run: |
+          conda activate tensorli
+          pytest
