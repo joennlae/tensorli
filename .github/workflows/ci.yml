@@ -12,7 +12,8 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: environment.yml
-      - run: |
+      - name: Lint with pylint
+        run: |
           conda info
           pylint tensorli.py
   black:
@@ -23,6 +24,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: environment.yml
-      - run: |
+      - name: Format with black
+        run: |
           conda info
           black tensorli.py
