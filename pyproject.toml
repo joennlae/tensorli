@@ -10,6 +10,7 @@ disable = [
     "W0105", # String statement has no effect (pointless-string-statement)
     "W0212", # Access to a protected member _ of a client class (protected-access)
     "E1101", # Instance of '...' has no '...' member (no-member) # pytorch issues
+    "import-error", # vscode pythonpath issues
 ]
 
 [tool.pytest.ini_options]
