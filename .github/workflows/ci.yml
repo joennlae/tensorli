@@ -19,7 +19,7 @@ jobs:
       - name: Lint with pylint
         run: |
           conda activate tensorli
-          pylint tensorli.py test/*.py
+          pylint tensorli/*.py test/*.py
   black:
     runs-on: ubuntu-latest
     name: Formatting with black
@@ -35,7 +35,7 @@ jobs:
       - name: Format with black
         run: |
           conda activate tensorli
-          black tensorli.py test/*.py
+          black tensorli/*.py test/*.py
   tests:
     runs-on: ubuntu-latest
     name: Running tests with pytest
