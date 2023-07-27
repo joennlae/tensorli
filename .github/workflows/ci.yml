@@ -51,4 +51,4 @@ jobs:
       - name: Running tests with pytest
         run: |
           conda activate tensorli
-          pytest
+          pytest -v

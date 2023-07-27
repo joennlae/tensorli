@@ -20,14 +20,12 @@ def test_simple_comparision():
     y = Tensorli(y_numpy)
     z = x * y + x
     z.backward()
-    print(x.grad)
 
     x_torch = torch.tensor(x_numpy, requires_grad=True)
     y_torch = torch.tensor(y_numpy, requires_grad=True)
     z_torch = x_torch * y_torch + x_torch
 
     z_torch.backward(torch.ones_like(z_torch))
-    print(x_torch.grad)
 
     assert np.allclose(x.grad, x_torch.grad.numpy())
 
@@ -103,11 +101,11 @@ def test_dot():
 
     z.backward()
 
-    x_torch = torch.tensor(x_numpy, requires_grad=True)
-    y_torch = torch.tensor(y_numpy, requires_grad=True)
+    x_torch = torch.tensor(x_numpy, requires_grad=True, dtype=torch.float64)
+    y_torch = torch.tensor(y_numpy, requires_grad=True, dtype=torch.float64)
     z_torch = x_torch @ y_torch
 
     z_torch.backward(torch.ones_like(z_torch))
 
-    assert np.allclose(x.data, z_torch.numpy())
+    assert np.allclose(z.data, z_torch.detach().numpy())
     assert np.allclose(x.grad, x_torch.grad.numpy())
