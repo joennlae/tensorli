@@ -65,15 +65,17 @@ class Tensorli:
         return f"Tensorli(data={self.data}, grad={self.grad})"
 
     def backward(self):
-        self.grad = np.ones_like(self.data) # set to 1.0
+        self.grad = np.ones_like(self.data)  # set to 1.0
         topo = []
         visited = set()
+
         def build_topo(t):
             if t not in visited:
                 visited.add(t)
                 for child in t._prev:
                     build_topo(child)
                 topo.append(t)
+
         build_topo(self)
         for t in reversed(topo):
             t._backward()
