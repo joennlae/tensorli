@@ -48,12 +48,8 @@ def test_simple_layer():
     z_torch = x_torch @ y_torch.T + b_torch
 
     z_torch.backward(torch.ones_like(z_torch))
-    assert np.allclose(z.data, z_torch.detach().numpy())
-    print(x_torch.grad)
-    z.print_graph()
     z.backward()
-    print(x.grad)
-
+    assert np.allclose(z.data, z_torch.detach().numpy())
     assert np.allclose(x.grad, x_torch.grad.numpy())
 
 

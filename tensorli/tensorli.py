@@ -32,22 +32,22 @@ class Tensorli:
         len_x_shape, len_y_shape = len(x.shape), len(y.shape)
         max_shape = max(len_x_shape, len_y_shape)
 
-        print(x.shape, y.shape, max_shape, (1,) * (max_shape - len_y_shape) + y.shape)
         if len_x_shape != max_shape:
             x = x.reshape((1,) * (max_shape - len_x_shape) + x.shape)
         if len_y_shape != max_shape:
             y = y.reshape((1,) * (max_shape - len_y_shape) + y.shape)
 
-        shape_ret = tuple([max(x, y) for x, y in zip(x.shape, y.shape)])
+        shape_ret = tuple(max(x, y) for x, y in zip(x.shape, y.shape))
         if x.shape != shape_ret:
             x = x.expand(shape_ret)
-            print("final x shape", x.shape)
         if y.shape != shape_ret:
             y = y.expand(shape_ret)
+        # TODO: very ugly structure at the moment
         if operation == broadcastedOps.ADD:
             return x + y
         if operation == broadcastedOps.MUL:
             return x * y
+        raise NotImplementedError
 
     def __add__(self, other):
         other = other if isinstance(other, Tensorli) else Tensorli(other)
@@ -64,16 +64,13 @@ class Tensorli:
 
     def __mul__(self, other):
         other = other if isinstance(other, Tensorli) else Tensorli(other)
-        print("other", other.data.shape, self.data.shape)
         if self.data.shape != other.data.shape:
             return self._broadcasted(other, broadcastedOps.MUL)
-        print("forward", self.data.shape)
-        # Attention we are using element-wise multiplication here
+        # Attention we are using element-wise multiplication!
+        # We reshape and expand before the element-wise multiplication
         out = Tensorli(np.multiply(self.data, other.data), children=(self, other), op="*")
 
         def _backward():
-            print("self", self.grad.shape, other.data.shape, out.grad.shape)
-            print("other", other.grad.shape, self.data.shape, out.grad.shape)
             self.grad += np.multiply(other.data, out.grad)
             other.grad += np.multiply(self.data, out.grad)
 
@@ -157,11 +154,9 @@ class Tensorli:
     def reshape(self, shape: Tuple[int, ...]):
         assert 0 not in shape, f"zeros not allowed in shape {shape}"
         input_shape = self.data.shape
-        print("reshape", input_shape, shape)
         out = Tensorli(self.data.reshape(shape), children=(self,), op="reshape")
 
         def _backward():
-            print("reshape back", input_shape, shape, out.grad.shape)
             self.grad += out.grad.reshape(input_shape)
 
         out._backward = _backward
@@ -169,11 +164,9 @@ class Tensorli:
 
     def sum(self, axis=None):
         input_shape = self.data.shape
-        print("sum", input_shape)
         out = Tensorli(np.sum(self.data, axis=axis), children=(self,), op="sum")
 
         def _backward():
-            print("back", input_shape, out.grad.shape, self.grad.shape)
             self.grad += np.broadcast_to(np.expand_dims(out.grad, axis=axis), input_shape)
 
         out._backward = _backward

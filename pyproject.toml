@@ -11,6 +11,7 @@ disable = [
     "W0212", # Access to a protected member _ of a client class (protected-access)
     "E1101", # Instance of '...' has no '...' member (no-member) # pytorch issues
     "import-error", # vscode pythonpath issues
+    "W0511", # TODO are allowed yet
 ]
 
 [tool.pytest.ini_options]
