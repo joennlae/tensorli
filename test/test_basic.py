@@ -30,3 +30,88 @@ def test_simple_comparision():
     print(x_torch.grad)
 
     assert np.allclose(x.grad, x_torch.grad.numpy())
+
+def test_simple_layer():
+    x_numpy = np.random.randn(8, 8, 10)
+    y_numpy = np.random.randn(6, 10)
+    b_numpy = np.random.randn(6)
+
+    x = Tensorli(x_numpy)
+    y = Tensorli(y_numpy)
+    b = Tensorli(b_numpy)
+    z = x @ y.T + b
+
+
+    x_torch = torch.tensor(x_numpy, requires_grad=True)
+    y_torch = torch.tensor(y_numpy, requires_grad=True)
+    b_torch = torch.tensor(b_numpy, requires_grad=True)
+    z_torch = x_torch @ y_torch.T + b_torch
+
+    z_torch.backward(torch.ones_like(z_torch))
+    assert np.allclose(z.data, z_torch.detach().numpy())
+    print(x_torch.grad)
+    z.print_graph()
+    z.backward()
+    print(x.grad)
+
+    assert np.allclose(x.grad, x_torch.grad.numpy())
+
+
+
+def test_broadcasted():
+    x_numpy = np.random.randn(10, 10)
+    y_numpy = np.random.randn(10)
+
+    x = Tensorli(x_numpy)
+    y = Tensorli(y_numpy)
+    z = x + y
+
+    z.backward()
+
+    x_torch = torch.tensor(x_numpy, requires_grad=True)
+    y_torch = torch.tensor(y_numpy, requires_grad=True)
+    z_torch = x_torch + y_torch
+
+    z_torch.backward(torch.ones_like(z_torch))
+
+    assert np.allclose(x.grad, x_torch.grad.numpy())
+    assert np.allclose(y.grad, y_torch.grad.numpy())
+
+
+def test_expand_reduce():
+    x_numpy = np.random.randn(10, 10)
+    y_numpy = np.random.randn(10)
+
+    x = Tensorli(x_numpy)
+    y = Tensorli(y_numpy)
+    z = x.expand((10, 10)) + y
+
+    z.backward()
+
+    x_torch = torch.tensor(x_numpy, requires_grad=True)
+    y_torch = torch.tensor(y_numpy, requires_grad=True)
+    z_torch = x_torch.expand((10, 10)) + y_torch
+
+    z_torch.backward(torch.ones_like(z_torch))
+
+    assert np.allclose(x.grad, x_torch.grad.numpy())
+    assert np.allclose(y.grad, y_torch.grad.numpy())
+
+def test_dot():
+    x_numpy = np.random.randn(8, 10, 10)
+    y_numpy = np.random.randn(8, 10, 6)
+
+    x = Tensorli(x_numpy)
+    y = Tensorli(y_numpy)
+    z = x @ y
+
+    z.backward()
+
+    x_torch = torch.tensor(x_numpy, requires_grad=True)
+    y_torch = torch.tensor(y_numpy, requires_grad=True)
+    z_torch = x_torch @ y_torch
+
+    z_torch.backward(torch.ones_like(z_torch))
+
+    assert np.allclose(x.data, z_torch.numpy())
+    assert np.allclose(x.grad, x_torch.grad.numpy())
