@@ -1,9 +1,12 @@
 from typing import Optional, Union, Tuple
 import numpy as np
 
+
 class broadcastedOps:
     ADD = 1
     MUL = 2
+
+
 class Tensorli:
     def __init__(
         self,
@@ -204,10 +207,14 @@ class Tensorli:
     def matmul(self, other):
         w = other
         n1, n2 = len(self.shape), len(w.shape)
-        assert n1 != 0 and n2 != 0, f"both arguments to matmul need to be at least 1D, but they are {n1}D and {n2}D"
-        x = self.reshape((*self.shape[0:-1], *[1]*min(n1-1, n2-1, 1), self.shape[-1]))
-        w = w.reshape((*w.shape[0:-2], *[1]*min(n1-1, n2-1, 1), *w.shape[-min(n2, 2):])).transpose(-1, -min(n2, 2))
-        return (x*w).sum(-1)
+        assert (
+            n1 != 0 and n2 != 0
+        ), f"both arguments to matmul need to be at least 1D, but they are {n1}D and {n2}D"
+        x = self.reshape((*self.shape[0:-1], *[1] * min(n1 - 1, n2 - 1, 1), self.shape[-1]))
+        w = w.reshape(
+            (*w.shape[0:-2], *[1] * min(n1 - 1, n2 - 1, 1), *w.shape[-min(n2, 2) :])
+        ).transpose(-1, -min(n2, 2))
+        return (x * w).sum(-1)
 
     def __matmul__(self, other):
         return self.matmul(other)

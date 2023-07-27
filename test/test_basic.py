@@ -31,6 +31,7 @@ def test_simple_comparision():
 
     assert np.allclose(x.grad, x_torch.grad.numpy())
 
+
 def test_simple_layer():
     x_numpy = np.random.randn(8, 8, 10)
     y_numpy = np.random.randn(6, 10)
@@ -40,7 +41,6 @@ def test_simple_layer():
     y = Tensorli(y_numpy)
     b = Tensorli(b_numpy)
     z = x @ y.T + b
-
 
     x_torch = torch.tensor(x_numpy, requires_grad=True)
     y_torch = torch.tensor(y_numpy, requires_grad=True)
@@ -55,7 +55,6 @@ def test_simple_layer():
     print(x.grad)
 
     assert np.allclose(x.grad, x_torch.grad.numpy())
-
 
 
 def test_broadcasted():
@@ -96,6 +95,7 @@ def test_expand_reduce():
 
     assert np.allclose(x.grad, x_torch.grad.numpy())
     assert np.allclose(y.grad, y_torch.grad.numpy())
+
 
 def test_dot():
     x_numpy = np.random.randn(8, 10, 10)

@@ -13,6 +13,7 @@ class Moduli:
     def __call__(self, *args, **kwargs):
         return self.forward(*args, **kwargs)
 
+
 class Linearli(Moduli):
     def __init__(self, in_features, out_features, bias=False):
         self.in_features = in_features
