@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from tensorli import Tensorli
+from tensorli.tensorli import Tensorli
 
 
 def test_simple():
@@ -10,6 +10,7 @@ def test_simple():
     z.backward()
     assert x.grad.data[0] == 4
     assert y.grad.data[0] == 3
+
 
 def test_simple_comparision():
     x_numpy = np.random.randn(10, 10)

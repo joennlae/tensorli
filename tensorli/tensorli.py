@@ -69,6 +69,8 @@ class Tensorli:
         topo = []
         visited = set()
 
+        # build topological order such that we calculate and pass the gradients
+        # back in the correct order
         def build_topo(t):
             if t not in visited:
                 visited.add(t)
@@ -79,3 +81,14 @@ class Tensorli:
         build_topo(self)
         for t in reversed(topo):
             t._backward()
+
+    # ops
+    def relu(self):
+        out = Tensorli(np.maximum(self.data, 0), children=(self,), op="relu")
+
+        def _backward():
+            self.grad += (self.data > 0) * out.grad
+
+        out._backward = _backward
+        return out
+
