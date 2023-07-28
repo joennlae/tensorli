@@ -37,12 +37,17 @@ class Tensorli:
         len_x_shape, len_y_shape = len(x.shape), len(y.shape)
         max_shape = max(len_x_shape, len_y_shape)
 
+        # same amount of dimensions
+        # common case for matrix multiplication:
+        # x = (b, x, 1, y), y = (1, z, y)
         if len_x_shape != max_shape:
             x = x.reshape((1,) * (max_shape - len_x_shape) + x.shape)
         if len_y_shape != max_shape:
             y = y.reshape((1,) * (max_shape - len_y_shape) + y.shape)
+        # x = (b, x, 1, y), y = (1, 1, z, y)
 
         shape_ret = tuple(max(x, y) for x, y in zip(x.shape, y.shape))
+        # x = (b, x, 1, y), y = (1, 1, z, y), shape_ret = (b, x, z, y)
         if x.shape != shape_ret:
             x = x.expand(shape_ret)
         if y.shape != shape_ret:
@@ -209,16 +214,21 @@ class Tensorli:
         return self.permute(order)
 
     def matmul(self, other: "Tensorli") -> "Tensorli":
-        w = other
-        n1, n2 = len(self.shape), len(w.shape)
-        assert (
-            n1 != 0 and n2 != 0
-        ), f"both arguments to matmul need to be at least 1D, but they are {n1}D and {n2}D"
+        # we do a elementwise multiplication and then sum over the last axis
+        # easier for gradient propagation :-)
+        # idea is from tinygrad
+        n1, n2 = len(self.shape), len(other.shape)
+        # (b, x, y) -> (b, x, 1, y) common case
         x = self.reshape((*self.shape[0:-1], *[1] * min(n1 - 1, n2 - 1, 1), self.shape[-1]))
-        w = w.reshape(
-            (*w.shape[0:-2], *[1] * min(n1 - 1, n2 - 1, 1), *w.shape[-min(n2, 2) :])
+        # (y, z) -> (1, y, z) common case
+        other = other.reshape(
+            (*other.shape[0:-2], *[1] * min(n1 - 1, n2 - 1, 1), *other.shape[-min(n2, 2) :])
         ).transpose(-1, -min(n2, 2))
-        return (x * w).sum(-1)
+        # (1, y, z) -> (transpose) -> (1, z, y)
+        # broadcast and then element multiply see _broadcasted
+        # (b, x, 1, y), y = (1, 1, z, y) -> (b, x, z, y)
+        # sum over y -> (b, x, z)
+        return (x * other).sum(-1)
 
     def __matmul__(self, other: "Tensorli") -> "Tensorli":
         return self.matmul(other)
