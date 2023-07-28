@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from tensorli.tensorli import Tensorli
-from tensorli.nnli import Linearli
+from tensorli.nnli import Linearli, Headli
 
 
 def test_linear():
@@ -45,3 +45,33 @@ def test_linear():
     out_torch.backward(torch.ones_like(out_torch))
 
     assert np.allclose(x.grad.astype(np.float32), x_torch.grad.numpy())
+
+
+def test_head():
+    embd_dim = 64
+    seq_len = 32
+    batch_size = 8
+
+    # batch_size, sequence_length, embedding dimensionality
+    x_numpy = np.random.randn(batch_size, seq_len, embd_dim)
+    x = Tensorli(x_numpy)
+    head = Headli(embd_dim, seq_len)
+
+    out = head(x)
+    out.backward()
+
+    x_torch = torch.tensor(x_numpy, requires_grad=True, dtype=torch.float64)
+    head_torch = torch.nn.MultiheadAttention(embd_dim, 1, bias=False, dropout=0.0, batch_first=True)
+
+    in_proj_numpy = np.concatenate(
+        [head.query.weight.data, head.key.weight.data, head.value.weight.data], axis=0
+    )
+    head_torch.in_proj_weight = torch.nn.Parameter(torch.tensor(in_proj_numpy, dtype=torch.float64))
+    head_torch.out_proj.weight = torch.nn.Parameter(
+        torch.tensor(head.out_proj.weight.data, dtype=torch.float64)
+    )
+
+    attn_mask = torch.tril(torch.ones(seq_len, seq_len)) == 0
+    out_torch, _ = head_torch(x_torch, x_torch, x_torch, attn_mask=attn_mask)
+
+    assert np.allclose(out.data, out_torch.detach().numpy())

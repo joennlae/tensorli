@@ -5,6 +5,7 @@ import numpy as np
 class broadcastedOps:
     ADD = 1
     MUL = 2
+    WHERE = 3
 
 
 class Tensorli:
@@ -25,7 +26,9 @@ class Tensorli:
         # debugging
         self._op = op
 
-    def _broadcasted(self, other, operation: broadcastedOps):
+    def _broadcasted(
+        self, other: "Tensorli", operation: broadcastedOps, condition: Optional["Tensorli"] = None
+    ) -> "Tensorli":
         if self.data.shape == other.data.shape:
             return other
         x, y = self, other
@@ -47,9 +50,11 @@ class Tensorli:
             return x + y
         if operation == broadcastedOps.MUL:
             return x * y
+        if operation == broadcastedOps.WHERE:
+            return x.where(condition, y)
         raise NotImplementedError
 
-    def __add__(self, other):
+    def __add__(self, other: Union["Tensorli", "float", "int"]) -> "Tensorli":
         other = other if isinstance(other, Tensorli) else Tensorli(other)
         if self.data.shape != other.data.shape:
             return self._broadcasted(other, broadcastedOps.ADD)
@@ -62,7 +67,7 @@ class Tensorli:
         out._backward = _backward
         return out
 
-    def __mul__(self, other):
+    def __mul__(self, other: Union["Tensorli", "float", "int"]) -> "Tensorli":
         other = other if isinstance(other, Tensorli) else Tensorli(other)
         if self.data.shape != other.data.shape:
             return self._broadcasted(other, broadcastedOps.MUL)
@@ -77,7 +82,7 @@ class Tensorli:
         out._backward = _backward
         return out
 
-    def __pow__(self, other):
+    def __pow__(self, other) -> "Tensorli":
         assert isinstance(other, (float, int)), "only supporting int and float powers for now"
         out = Tensorli(self.data**other, children=(self,), op=f"**{other}")
 
@@ -87,16 +92,17 @@ class Tensorli:
         out._backward = _backward
         return out
 
-    def __neg__(self):
+    def __neg__(self) -> "Tensorli":
         return self * -1
 
-    def __sub__(self, other):
+    def __sub__(self, other) -> "Tensorli":
         return self + (-other)
 
-    def __truediv__(self, other):
+    def __truediv__(self, other) -> "Tensorli":
+        print("div", self.data.shape, other.data.shape)
         return self * other**-1
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Tensorli(data={self.data}, grad={self.grad})"
 
     def backward(self):
@@ -123,7 +129,7 @@ class Tensorli:
             child.print_graph(level + 1)
 
     # ops
-    def relu(self):
+    def relu(self) -> "Tensorli":
         out = Tensorli(np.maximum(self.data, 0), children=(self,), op="relu")
 
         def _backward():
@@ -151,7 +157,7 @@ class Tensorli:
         out._backward = _backward
         return out
 
-    def reshape(self, shape: Tuple[int, ...]):
+    def reshape(self, shape: Tuple[int, ...]) -> "Tensorli":
         assert 0 not in shape, f"zeros not allowed in shape {shape}"
         input_shape = self.data.shape
         out = Tensorli(self.data.reshape(shape), children=(self,), op="reshape")
@@ -162,17 +168,21 @@ class Tensorli:
         out._backward = _backward
         return out
 
-    def sum(self, axis=None):
+    def sum(self, axis=None, keepdim=False) -> "Tensorli":
         input_shape = self.data.shape
-        out = Tensorli(np.sum(self.data, axis=axis), children=(self,), op="sum")
+        out = Tensorli(np.sum(self.data, axis=axis, keepdims=keepdim), children=(self,), op="sum")
 
         def _backward():
-            self.grad += np.broadcast_to(np.expand_dims(out.grad, axis=axis), input_shape)
+            if not keepdim:
+                ret = np.expand_dims(out.grad, axis=axis)
+            else:
+                ret = out.grad
+            self.grad += np.broadcast_to(ret, input_shape)
 
         out._backward = _backward
         return out
 
-    def permute(self, order):
+    def permute(self, order: list[int]) -> "Tensorli":
         input_order = order
         out = Tensorli(self.data.transpose(order), children=(self,), op="permute")
 
@@ -189,15 +199,15 @@ class Tensorli:
         return self.data.shape
 
     @property
-    def T(self):
+    def T(self) -> "Tensorli":
         return self.transpose()
 
-    def transpose(self, ax1=-1, ax2=-2):
+    def transpose(self, ax1=-1, ax2=-2) -> "Tensorli":
         order = list(range(len(self.data.shape)))
         order[ax1], order[ax2] = order[ax2], order[ax1]
         return self.permute(order)
 
-    def matmul(self, other):
+    def matmul(self, other: "Tensorli") -> "Tensorli":
         w = other
         n1, n2 = len(self.shape), len(w.shape)
         assert (
@@ -209,5 +219,36 @@ class Tensorli:
         ).transpose(-1, -min(n2, 2))
         return (x * w).sum(-1)
 
-    def __matmul__(self, other):
+    def __matmul__(self, other: "Tensorli") -> "Tensorli":
         return self.matmul(other)
+
+    def exp(self) -> "Tensorli":
+        out = Tensorli(np.exp(self.data), children=(self,), op="exp")
+
+        def _backward():
+            self.grad += np.exp(self.data) * out.grad
+
+        out._backward = _backward
+        return out
+
+    def softmax(self, axis=-1) -> "Tensorli":
+        exp = self.exp()
+        out = exp / exp.sum(axis=axis, keepdim=True)
+        return out
+
+    def where(self, condition: "Tensorli", other: "Tensorli") -> "Tensorli":
+        if self.data.shape != other.data.shape:
+            return self._broadcasted(other, broadcastedOps.WHERE, condition=condition)
+        out = Tensorli(
+            np.where(condition.data, self.data, other.data),
+            children=(self, other, condition),
+            op="where",
+        )
+
+        def _backward():
+            self.grad += np.where(condition.data, out.grad, np.zeros_like(out.grad))
+            print(other.grad.shape, out.grad.shape)
+            other.grad += np.where(condition.data, np.zeros_like(out.grad), out.grad)
+
+        out._backward = _backward
+        return out
