@@ -14,6 +14,7 @@ class Tensorli:
         data: Union[np.ndarray, float, int],
         children: Optional[tuple[np.ndarray, np.ndarray]] = (),
         op: Optional[str] = "",
+        name: Optional[str] = "",
     ) -> None:
         self.grad: Optional[Tensorli] = None
         if isinstance(data, (float, int)):
@@ -25,6 +26,7 @@ class Tensorli:
 
         # debugging
         self._op = op
+        self._name = name
 
     def _broadcasted(
         self, other: "Tensorli", operation: broadcastedOps, condition: Optional["Tensorli"] = None
@@ -124,7 +126,7 @@ class Tensorli:
             t._backward()
 
     def print_graph(self, level=0):
-        print("  " * level + f"{self._op} {self.data.shape}")
+        print("  " * level + f"{self._name} {self._op} {self.data.shape}")
         for child in self._prev:
             child.print_graph(level + 1)
 
@@ -249,6 +251,26 @@ class Tensorli:
             self.grad += np.where(condition.data, out.grad, np.zeros_like(out.grad))
             print(other.grad.shape, out.grad.shape)
             other.grad += np.where(condition.data, np.zeros_like(out.grad), out.grad)
+
+        out._backward = _backward
+        return out
+
+    def cat(self, other: list["Tensorli"], dim=-1) -> "Tensorli":
+        assert len(other) > 0
+        assert dim == -1, "only supporting concatenation along last dimension for now"
+        assert all(self.shape == o.shape for o in other), "only support same size concat for now"
+        out = Tensorli(
+            np.concatenate([self.data] + [o.data for o in other], axis=dim),
+            children=(self, *other),
+            op="cat",
+        )
+
+        def _backward():
+            self.grad += np.take(out.grad, np.arange(self.shape[dim]), axis=dim)
+            for i, o in enumerate(other):
+                o.grad += np.take(
+                    out.grad, np.arange(self.shape[dim]) + self.shape[dim] * (i + 1), axis=dim
+                )
 
         out._backward = _backward
         return out

@@ -109,3 +109,20 @@ def test_dot():
 
     assert np.allclose(z.data, z_torch.detach().numpy())
     assert np.allclose(x.grad, x_torch.grad.numpy())
+
+
+def test_cat():
+    xs_numpy = [np.random.randn(8, 6, 10) for _ in range(10)]
+    xs = [Tensorli(x) for x in xs_numpy]
+    z = xs[0].cat(xs[1:])
+    y = z.sum(-1)
+    y.backward()
+
+    xs_torch = [torch.tensor(x, requires_grad=True) for x in xs_numpy]
+    z_torch = torch.cat(xs_torch, dim=-1)
+    y_torch = z_torch.sum(-1)
+    y_torch.backward(torch.ones_like(y_torch))
+
+    assert np.allclose(y.data, y_torch.detach().numpy())
+    assert np.allclose(xs[0].grad, xs_torch[0].grad.numpy())
+    assert np.allclose(xs[3].grad, xs_torch[3].grad.numpy())

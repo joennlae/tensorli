@@ -38,30 +38,49 @@ class Linearli(Moduli):
 class Headli(Moduli):
     """one head of self-attention"""
 
-    def __init__(self, embd_dim, seq_len):
+    def __init__(self, embd_dim, head_size, seq_len):
         super().__init__()
-        self.key = Linearli(embd_dim, embd_dim, bias=False)
-        self.query = Linearli(embd_dim, embd_dim, bias=False)
-        self.value = Linearli(embd_dim, embd_dim, bias=False)
-        self.out_proj = Linearli(embd_dim, embd_dim, bias=False)
+        self.key = Linearli(embd_dim, head_size, bias=False)
+        self.query = Linearli(embd_dim, head_size, bias=False)
+        self.value = Linearli(embd_dim, head_size, bias=False)
         self.where_condition = Tensorli(np.tril(np.ones((seq_len, seq_len))) > 0)
         self.where_neg_inf = Tensorli(np.ones((seq_len, seq_len)) * np.inf * -1)
+        self.num_heads = embd_dim // head_size
 
     def forward(self, x: Tensorli):
         _, _, C = x.shape  # (batch_size, seq_len, embd_dim)
-        k = self.key(x)  # (batch_size, seq_len, embd_dim)
-        q = self.query(x)  # (batch_size, seq_len, embd_dim)
+        k = self.key(x)  # (batch_size, seq_len, head_size)
+        q = self.query(x)  # (batch_size, seq_len, head_size)
         # compute attention scores ("affinities")
-        # (batch_size, seq_len, embd_dim) @ (batch_size, embd_dim, seq_len)
+        # (batch_size, seq_len, head_size) @ (batch_size, head_size, seq_len)
         # -> (batch_size, seq_len, seq_len)
-        wei = q @ k.transpose(-2, -1) * (C**-0.5)
+        w = q @ k.transpose(-2, -1) * ((C / self.num_heads) ** -0.5)  # mul is element-wise
         # this is a decoder as we have a lower triangular with weights
-        wei = wei.where(self.where_condition, self.where_neg_inf)
-        wei = wei.softmax(-1)  # (batch_size, seq_len, seq_len)
+        # causal self-attention
+        w = w.where(self.where_condition, self.where_neg_inf)
+        w = w.softmax(-1)  # (batch_size, seq_len, seq_len)
         # perform the weighted aggregation of the values
-        v = self.value(x)  # (batch_size, seq_len, embd_dim)
-        # (batch_size, seq_len, seq_len) @ (batch_size, seq_len, embd_dim)
-        # -> (batch_size, seq_len, embd_dim)
-        out = wei @ v
-        out = self.out_proj(out)  # (batch_size, seq_len, embd_dim)
+        v = self.value(x)  # (batch_size, seq_len, head_size)
+        # (batch_size, seq_len, seq_len) @ (batch_size, seq_len, head_size)
+        # -> (batch_size, seq_len, head_size)
+        out = w @ v
+        return out
+
+
+class MultiHeadAttentionli(Moduli):
+    """Multi-head self-attention"""
+
+    def __init__(self, embd_dim, seq_len, n_heads):
+        super().__init__()
+        assert embd_dim % n_heads == 0
+        self.heads = [Headli(embd_dim, embd_dim // n_heads, seq_len) for _ in range(n_heads)]
+        self.out_proj = Linearli(embd_dim, embd_dim, bias=False)
+
+    def forward(self, x: Tensorli):
+        if len(self.heads) > 1:
+            outs = [head(x) for head in self.heads]
+            out = outs[0].cat(outs[1:], dim=-1)
+        else:
+            out = self.heads[0](x)
+        out = self.out_proj(out)
         return out
