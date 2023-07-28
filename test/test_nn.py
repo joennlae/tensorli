@@ -48,14 +48,14 @@ def test_linear():
 
 
 def test_multi_head():
-    embd_dim = 64
-    seq_len = 32
-    batch_size = 8
+    embd_dim = 512
+    seq_len = 128
+    batch_size = 4
     n_heads = 4
     np.random.seed(4419)
 
     # batch_size, sequence_length, embedding dimensionality
-    x_numpy = np.random.randn(batch_size, seq_len, embd_dim)
+    x_numpy = np.random.uniform(low=-1.0, high=1.0, size=(batch_size, seq_len, embd_dim))
     x = Tensorli(x_numpy)
     multi_head = MultiHeadAttentionli(embd_dim, seq_len, n_heads)
 
@@ -86,5 +86,14 @@ def test_multi_head():
 
     out_torch.backward(torch.ones_like(out_torch))
 
+    params = multi_head.parameters()
+    param_count = sum(p.data.size for p in params)
+    print(f"Number of parameters: {param_count}")
+
+    params_torch = head_torch.parameters()
+    param_count_torch = sum(p.numel() for p in params_torch)
+    print(f"Number of parameters: {param_count_torch}")
+
+    assert np.allclose(param_count, param_count_torch)
     assert np.allclose(out.data, out_torch.detach().numpy())
     assert np.allclose(x.grad, x_torch.grad.numpy())

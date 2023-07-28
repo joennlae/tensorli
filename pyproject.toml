@@ -13,6 +13,7 @@ disable = [
     "import-error", # vscode pythonpath issues
     "W0511", # TODO are allowed yet
     "W0221", # Arguments number differs from overridden method (arguments-differ)
+    "R0914", # Too many local variables (7/5) (too-many-locals)
 ]
 
 [tool.pytest.ini_options]

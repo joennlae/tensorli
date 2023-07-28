@@ -2,7 +2,7 @@ from typing import Optional, Union, Tuple, Iterable, Literal
 import numpy as np
 
 
-broadcastedOps = Literal["ADD", "MUL", "WHERE"]
+broadcastedOps = Literal["ADD", "MUL", "DIV", "WHERE"]
 
 
 class Tensorli:
@@ -53,6 +53,8 @@ class Tensorli:
             return x + y
         if operation == "MUL":
             return x * y
+        if operation == "DIV":
+            return x / y
         if operation == "WHERE":
             assert condition is not None
             return x.where(condition, y)
@@ -86,6 +88,20 @@ class Tensorli:
         out._backward = _backward
         return out
 
+    def div(self, other: Union["Tensorli", "float", "int"]) -> "Tensorli":
+        other = other if isinstance(other, Tensorli) else Tensorli(other)
+        if self.data.shape != other.data.shape:
+            return self._broadcasted(other, "DIV")
+
+        out = Tensorli(np.divide(self.data, other.data), children=(self, other), op="/")
+
+        def _backward():
+            self.grad += np.divide(out.grad, other.data)
+            other.grad += np.divide(-self.data * out.grad, other.data**2)
+
+        out._backward = _backward
+        return out
+
     def __pow__(self, other) -> "Tensorli":
         assert isinstance(other, (float, int)), "only supporting int and float powers for now"
         out = Tensorli(self.data**other, children=(self,), op=f"**{other}")
@@ -103,7 +119,7 @@ class Tensorli:
         return self + (-other)
 
     def __truediv__(self, other) -> "Tensorli":
-        return self * other**-1
+        return self.div(other)
 
     def __repr__(self) -> str:
         return f"Tensorli(data={self.data}, grad={self.grad})"
