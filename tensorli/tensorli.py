@@ -147,7 +147,6 @@ class Tensorli:
         for child in self._prev:
             child.print_graph(level + 1)
 
-    # ops
     def relu(self) -> "Tensorli":
         out = Tensorli(np.maximum(self.data, 0), children=(self,), op="relu")
 

@@ -48,7 +48,7 @@ def test_linear():
 
 
 def test_multi_head():
-    embd_dim = 512
+    embd_dim = 256
     seq_len = 128
     batch_size = 4
     n_heads = 4
