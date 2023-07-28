@@ -74,4 +74,7 @@ def test_head():
     attn_mask = torch.tril(torch.ones(seq_len, seq_len)) == 0
     out_torch, _ = head_torch(x_torch, x_torch, x_torch, attn_mask=attn_mask)
 
+    out_torch.backward(torch.ones_like(out_torch))
+
     assert np.allclose(out.data, out_torch.detach().numpy())
+    assert np.allclose(x.grad, x_torch.grad.numpy())
