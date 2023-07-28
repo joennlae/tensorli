@@ -101,7 +101,6 @@ class Tensorli:
         return self + (-other)
 
     def __truediv__(self, other) -> "Tensorli":
-        print("div", self.data.shape, other.data.shape)
         return self * other**-1
 
     def __repr__(self) -> str:
@@ -249,7 +248,6 @@ class Tensorli:
 
         def _backward():
             self.grad += np.where(condition.data, out.grad, np.zeros_like(out.grad))
-            print(other.grad.shape, out.grad.shape)
             other.grad += np.where(condition.data, np.zeros_like(out.grad), out.grad)
 
         out._backward = _backward
