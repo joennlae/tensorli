@@ -10,6 +10,9 @@ class Moduli:
     def parameters(self):
         return []
 
+    def forward(self, *args, **kwargs) -> Tensorli:
+        raise NotImplementedError
+
     def __call__(self, *args, **kwargs) -> Tensorli:
         return self.forward(*args, **kwargs)
 

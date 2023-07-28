@@ -52,3 +52,19 @@ jobs:
         run: |
           conda activate tensorli
           pytest -v
+  mypy:
+    runs-on: ubuntu-latest
+    name: Running type checks with mypy
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: environment.yml
+          activate-environment: tensorli
+      - name: Running type checks with mypy
+        run: |
+          conda activate tensorli
+          mypy tensorli/ test/

@@ -1,22 +1,18 @@
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, Iterable, Literal
 import numpy as np
 
 
-class broadcastedOps:
-    ADD = 1
-    MUL = 2
-    WHERE = 3
+broadcastedOps = Literal["ADD", "MUL", "WHERE"]
 
 
 class Tensorli:
     def __init__(
         self,
         data: Union[np.ndarray, float, int],
-        children: Optional[tuple[np.ndarray, np.ndarray]] = (),
+        children: Iterable["Tensorli"] = (),
         op: Optional[str] = "",
         name: Optional[str] = "",
     ) -> None:
-        self.grad: Optional[Tensorli] = None
         if isinstance(data, (float, int)):
             data = np.array([data])
         self.data = data
@@ -53,18 +49,19 @@ class Tensorli:
         if y.shape != shape_ret:
             y = y.expand(shape_ret)
         # TODO: very ugly structure at the moment
-        if operation == broadcastedOps.ADD:
+        if operation == "ADD":
             return x + y
-        if operation == broadcastedOps.MUL:
+        if operation == "MUL":
             return x * y
-        if operation == broadcastedOps.WHERE:
+        if operation == "WHERE":
+            assert condition is not None
             return x.where(condition, y)
         raise NotImplementedError
 
     def __add__(self, other: Union["Tensorli", "float", "int"]) -> "Tensorli":
         other = other if isinstance(other, Tensorli) else Tensorli(other)
         if self.data.shape != other.data.shape:
-            return self._broadcasted(other, broadcastedOps.ADD)
+            return self._broadcasted(other, "ADD")
         out = Tensorli(self.data + other.data, children=(self, other), op="+")
 
         def _backward():
@@ -77,7 +74,7 @@ class Tensorli:
     def __mul__(self, other: Union["Tensorli", "float", "int"]) -> "Tensorli":
         other = other if isinstance(other, Tensorli) else Tensorli(other)
         if self.data.shape != other.data.shape:
-            return self._broadcasted(other, broadcastedOps.MUL)
+            return self._broadcasted(other, "MUL")
         # Attention we are using element-wise multiplication!
         # We reshape and expand before the element-wise multiplication
         out = Tensorli(np.multiply(self.data, other.data), children=(self, other), op="*")
@@ -249,7 +246,7 @@ class Tensorli:
 
     def where(self, condition: "Tensorli", other: "Tensorli") -> "Tensorli":
         if self.data.shape != other.data.shape:
-            return self._broadcasted(other, broadcastedOps.WHERE, condition=condition)
+            return self._broadcasted(other, "WHERE", condition=condition)
         out = Tensorli(
             np.where(condition.data, self.data, other.data),
             children=(self, other, condition),

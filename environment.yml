@@ -9,3 +9,4 @@ dependencies:
   - black
   - pylint
   - pytest
+  - conda-forge::mypy

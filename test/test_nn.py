@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from tensorli.tensorli import Tensorli
-from tensorli.nnli import Linearli, Headli, MultiHeadAttentionli
+from tensorli.nnli import Linearli, MultiHeadAttentionli
 
 
 def test_linear():

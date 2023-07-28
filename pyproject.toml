@@ -12,6 +12,7 @@ disable = [
     "E1101", # Instance of '...' has no '...' member (no-member) # pytorch issues
     "import-error", # vscode pythonpath issues
     "W0511", # TODO are allowed yet
+    "W0221", # Arguments number differs from overridden method (arguments-differ)
 ]
 
 [tool.pytest.ini_options]
