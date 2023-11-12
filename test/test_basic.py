@@ -156,3 +156,31 @@ def test_mean_bug():
     y = x.mean().mean()
     print(y)
     y.backward()
+
+
+def test_cross_entropy():
+    x_numpy = np.random.randn(8, 10, 6)
+    y_numpy = np.random.randint(0, 10 - 1, size=(8, 6))
+
+    x = Tensorli(x_numpy)
+    y = Tensorli(y_numpy)
+
+    x_torch = torch.tensor(x_numpy, requires_grad=True)
+    y_torch = torch.tensor(y_numpy, requires_grad=False)
+
+    z_none = x.cross_entropy(y, reduction_type="none")
+    z_torch_none = torch.nn.functional.cross_entropy(x_torch, y_torch, reduction="none")
+    assert np.allclose(z_none.data, z_torch_none.detach().numpy())
+
+    z_mean = x.cross_entropy(y, reduction_type="mean")
+    z_torch_mean = torch.nn.functional.cross_entropy(x_torch, y_torch, reduction="mean")
+    assert np.allclose(z_mean.data, z_torch_mean.detach().numpy())
+
+    z_sum = x.cross_entropy(y, reduction_type="sum")
+    z_torch_sum = torch.nn.functional.cross_entropy(x_torch, y_torch, reduction="sum")
+    assert np.allclose(z_sum.data, z_torch_sum.detach().numpy())
+
+    z_mean.backward()
+    z_torch_mean.backward()
+
+    assert np.allclose(x.grad, x_torch.grad.numpy())
