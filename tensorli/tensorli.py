@@ -319,6 +319,32 @@ class Tensorli:
         out = (self - mean) / (std)  # https://arxiv.org/abs/1607.06450
         return out
 
+    def log(self) -> "Tensorli":
+        out = Tensorli(np.log(self.data), children=(self,), op="log")
+
+        def _backward():
+            self.grad += (1.0 / self.data) * out.grad
+
+        out._backward = _backward
+        return out
+
+    def cross_entropy(self, target: "Tensorli", reduction_type="mean") -> "Tensorli":
+        softmaxed = self.softmax(-2).log()
+        assert len(target.shape) == 2, "only supporting 2d target for now"
+        assert len(self.shape) == 3, "only supporting batch_sized input for now"
+        reduction = Tensorli.zeros_like(softmaxed)
+        for i in range(target.shape[0]):
+            for j in range(target.shape[1]):
+                reduction.data[i, target.data[i, j], j] = -1.0
+        reduction = (reduction * softmaxed).sum(-2)
+        if reduction_type == "mean":
+            out = reduction.mean().mean()
+        elif reduction_type == "sum":
+            out = reduction.sum().sum()
+        elif reduction_type == "none":
+            out = reduction
+        return out
+
     # some init helpers
     @staticmethod
     def zeros(dim) -> "Tensorli":
@@ -331,3 +357,7 @@ class Tensorli:
     @staticmethod
     def normal(dim, mean=0.0, std=0.02) -> "Tensorli":
         return Tensorli(np.random.normal(mean, std, dim))
+
+    @staticmethod
+    def zeros_like(x: "Tensorli") -> "Tensorli":
+        return Tensorli(np.zeros_like(x.data))
