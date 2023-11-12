@@ -1,19 +1,20 @@
 [tool.pylint]
 max-line-length = 100
 disable = [
-    "C0103", # Variable name doesn't conform to snake_case naming style (invalid-name)
-    "C0114", # Missing module docstring (missing-module-docstring)
-    "C0115", # Missing class docstring (missing-class-docstring)
-    "C0116", # Missing function or method docstring (missing-function-docstring)
-    "R0903", # Too few public methods (1/2) (too-few-public-methods)
-    "R0913", # Too many arguments (6/5) (too-many-arguments)
-    "W0105", # String statement has no effect (pointless-string-statement)
-    "W0212", # Access to a protected member _ of a client class (protected-access)
-    "E1101", # Instance of '...' has no '...' member (no-member) # pytorch issues
-    "import-error", # vscode pythonpath issues
-    "W0511", # TODO are allowed yet
-    "W0221", # Arguments number differs from overridden method (arguments-differ)
-    "R0914", # Too many local variables (7/5) (too-many-locals)
+  "C0103",        # Variable name doesn't conform to snake_case naming style (invalid-name)
+  "C0114",        # Missing module docstring (missing-module-docstring)
+  "C0115",        # Missing class docstring (missing-class-docstring)
+  "C0116",        # Missing function or method docstring (missing-function-docstring)
+  "R0903",        # Too few public methods (1/2) (too-few-public-methods)
+  "R0913",        # Too many arguments (6/5) (too-many-arguments)
+  "W0105",        # String statement has no effect (pointless-string-statement)
+  "W0212",        # Access to a protected member _ of a client class (protected-access)
+  "E1101",        # Instance of '...' has no '...' member (no-member) # pytorch issues
+  "import-error", # vscode pythonpath issues
+  "W0511",        # TODO are allowed yet
+  "W0221",        # Arguments number differs from overridden method (arguments-differ)
+  "R0914",        # Too many local variables (7/5) (too-many-locals),
+  "R0904",        # Too many public methods (11/10) (too-many-public-methods)
 ]
 
 [tool.pytest.ini_options]
