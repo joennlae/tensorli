@@ -126,3 +126,33 @@ def test_cat():
     assert np.allclose(y.data, y_torch.detach().numpy())
     assert np.allclose(xs[0].grad, xs_torch[0].grad.numpy())
     assert np.allclose(xs[3].grad, xs_torch[3].grad.numpy())
+
+
+def test_loss_reduction():
+    x_numpy = np.random.randn(8, 6, 10)
+    x = Tensorli(x_numpy)
+    y = x.sum(-1).mean().mean()
+    print(y)
+    y.backward()
+
+    x_torch = torch.tensor(x_numpy, requires_grad=True)
+    y_torch = x_torch.sum(-1).mean()
+    print(y_torch)
+    y_torch.backward(torch.ones_like(y_torch))
+
+    assert np.allclose(y.data, y_torch.detach().numpy())
+    assert np.allclose(x.grad, x_torch.grad.numpy())
+
+
+def test_mean_bug():
+    x_numpy = np.random.randn(1, 6)
+    x = Tensorli(x_numpy)
+    y = x.mean()
+    print(y)
+    y.backward()
+
+    x_numpy = np.random.randn(6, 6)
+    x = Tensorli(x_numpy)
+    y = x.mean().mean()
+    print(y)
+    y.backward()
