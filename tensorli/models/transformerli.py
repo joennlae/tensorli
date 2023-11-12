@@ -56,9 +56,7 @@ class Transformerli(Moduli):
         pos_embedding = self.pos_embedding(pos)
         x = token_embedding + pos_embedding
         for block in self.blocks:
-            print("block")
             x = block(x)
-        print("after block")
         x = x.layer_norm()
         x = self.lm_head(x)
         return x
