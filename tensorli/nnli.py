@@ -21,11 +21,9 @@ class Linearli(Moduli):
     def __init__(self, in_features, out_features, bias=False):
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = Tensorli(
-            np.random.uniform(low=-1.0, high=1.0, size=(out_features, in_features))
-        )
+        self.weight = Tensorli.normal((out_features, in_features), mean=0.0, std=0.02)
         if bias:
-            self.bias = Tensorli(np.random.uniform(low=-1.0, high=1.0, size=out_features))
+            self.bias = Tensorli.normal((out_features,), mean=0.0, std=0.02)
         else:
             self.bias = None
 
@@ -51,7 +49,7 @@ class Headli(Moduli):
         self.query = Linearli(embd_dim, head_size, bias=False)
         self.value = Linearli(embd_dim, head_size, bias=False)
         self.where_condition = Tensorli(np.tril(np.ones((seq_len, seq_len))) > 0)
-        self.where_neg_inf = Tensorli(np.ones((seq_len, seq_len)) * np.inf * -1)
+        self.where_neg_inf = Tensorli(np.ones((seq_len, seq_len)) * np.inf * -1.0)
         self.num_heads = embd_dim // head_size
 
     def forward(self, x: Tensorli) -> Tensorli:
@@ -97,3 +95,23 @@ class MultiHeadAttentionli(Moduli):
 
     def parameters(self) -> list[Tensorli]:
         return [p for head in self.heads for p in head.parameters()] + self.out_proj.parameters()
+
+
+class Embeddingli(Moduli):
+    def __init__(self, embd_size, embd_dim):
+        self.embd_size = embd_size
+        self.embd_dim = embd_dim
+        self.weight = Tensorli.normal((embd_size, embd_dim), mean=0.0, std=0.02)
+
+    def forward(self, x: Tensorli) -> Tensorli:
+        # very inefficient
+        batch_size, input_len = x.shape
+        selection_vector = np.zeros((batch_size, input_len, self.embd_size))
+        for i in range(batch_size):
+            for j in range(input_len):
+                selection_vector[i, j, x.data[i, j]] = 1  # one-hot encoding
+        selection_tensor = Tensorli(selection_vector)
+        return selection_tensor @ self.weight
+
+    def parameters(self) -> list[Tensorli]:
+        return [self.weight]
