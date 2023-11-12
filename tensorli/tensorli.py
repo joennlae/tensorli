@@ -113,7 +113,7 @@ class Tensorli:
         return out
 
     def __neg__(self) -> "Tensorli":
-        return self * -1
+        return self * -1.0
 
     def __sub__(self, other) -> "Tensorli":
         return self + (-other)
@@ -191,7 +191,7 @@ class Tensorli:
         out = Tensorli(np.sum(self.data, axis=axis, keepdims=keepdim), children=(self,), op="sum")
 
         def _backward():
-            if not keepdim:
+            if not keepdim and len(input_shape) > 1:
                 ret = np.expand_dims(out.grad, axis=axis)
             else:
                 ret = out.grad
@@ -294,3 +294,40 @@ class Tensorli:
 
         out._backward = _backward
         return out
+
+    # normalization
+    def sqrt(self) -> "Tensorli":
+        return self**0.5
+
+    def mean(self, axis=-1, keepdim=False) -> "Tensorli":
+        return self.sum(axis=axis, keepdim=keepdim) * (1 / self.shape[axis])  # multiply by 1/N
+
+    def var(self, axis=-1, keepdim=False) -> "Tensorli":
+        mean = self.mean(axis=axis, keepdim=keepdim)
+        out = ((self - mean) ** 2).mean(axis=axis, keepdim=keepdim)
+        return out
+
+    def std(self, axis=-1, keepdim=False, eps=None) -> "Tensorli":
+        var = self.var(axis=axis, keepdim=keepdim)
+        if eps is not None:
+            var += eps
+        return var.sqrt()
+
+    def layer_norm(self, eps=1e-5) -> "Tensorli":
+        mean = self.mean(axis=-1, keepdim=True)
+        std = self.std(axis=-1, keepdim=True, eps=eps)
+        out = (self - mean) / (std)  # https://arxiv.org/abs/1607.06450
+        return out
+
+    # some init helpers
+    @staticmethod
+    def zeros(dim) -> "Tensorli":
+        return Tensorli(np.zeros(dim))
+
+    @staticmethod
+    def ones(dim) -> "Tensorli":
+        return Tensorli(np.ones(dim))
+
+    @staticmethod
+    def normal(dim, mean=0.0, std=0.02) -> "Tensorli":
+        return Tensorli(np.random.normal(mean, std, dim))
