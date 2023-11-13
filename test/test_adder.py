@@ -148,4 +148,4 @@ def deactivated_test_adder_set():
 
 
 if __name__ == "__main__":
-    test_adder_set()
+    deactivated_test_adder_set()
