@@ -15,6 +15,7 @@ disable = [
   "W0221",        # Arguments number differs from overridden method (arguments-differ)
   "R0914",        # Too many local variables (7/5) (too-many-locals),
   "R0904",        # Too many public methods (11/10) (too-many-public-methods)
+  "R0902",        # Too many instance attributes
 ]
 
 [tool.pytest.ini_options]
