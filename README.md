@@ -11,9 +11,9 @@ The implementation includes:
 
 All that is "needed" to train and execute a GPT-like transformer model.
 
-`Everything else is optimizations`<sup>[1](#myfootnote1)</sup>.
+*`...and everything else is just efficiency`* ~ Andrej Karpathy<sup>[1](#myfootnote1)</sup>.
 
-<a name="myfootnote1">1</a>: *Which are very important, but not the focus of this project.*
+<a name="myfootnote1">1</a>: [Youtube - micrograd](https://youtu.be/VMj-3S1tku0?si=6qISQdXUKBSMOy3Z&t=474) 
 
 ## Example
 
