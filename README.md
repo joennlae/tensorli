@@ -1,7 +1,7 @@
 
 # Tensorli
 
-Absolute minimalistic implementation of a GPT-like transformer using only `numpy`.
+Absolute minimalistic implementation of a GPT-like transformer using only `numpy` (<650 lines).
 
 The implementation includes:
 - Automatic differentiation
@@ -13,6 +13,22 @@ All that is "needed" to train and execute a GPT-like transformer model.
 
 ```
 Everything else is optimizations.
+```
+
+## Example
+
+```python
+from tensorli.tensorli import Tensorli
+from tensorli.models.transformerli import Transformerli
+
+vocb_size, embd_dim, seq_len, n_layer, n_head, batch_size = 10, 64, 10, 3, 4, 16
+
+transformer = Transformerli(vocb_size, embd_dim, seq_len, n_layer, n_head)
+
+x_numpy = np.random.randint(0, vocb_size - 1, size=(batch_size, seq_len))
+x = Tensorli(x_numpy)
+
+out = transformer(x)
 ```
 
 ## Naming
