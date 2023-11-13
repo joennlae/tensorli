@@ -1,7 +1,12 @@
+<div align="center">
+<img src="logo.png" alt="logo" width="200"/>
 
-# Tensorli
-
+<h3>
 Absolute minimalistic implementation of a GPT-like transformer using only `numpy` (<650 lines).
+</h3>
+</div>
+
+---
 
 The implementation includes:
 - Automatic differentiation
