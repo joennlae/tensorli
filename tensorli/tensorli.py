@@ -126,7 +126,7 @@ class Tensorli:
 
     def backward(self):
         self.grad = np.ones_like(self.data)  # set to 1.0
-        topo = []
+        topo: list["Tensorli"] = []
         visited = set()
 
         # build topological order such that we calculate and pass the gradients
