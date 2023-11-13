@@ -143,6 +143,8 @@ def test_adder_set():
 
     eval_helper()
 
+    return 0
+
 
 if __name__ == "__main__":
     test_adder_set()
