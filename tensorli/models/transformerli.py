@@ -68,3 +68,22 @@ class Transformerli(Moduli):
             + [p for block in self.blocks for p in block.parameters()]
             + self.lm_head.parameters()
         )
+
+    def generate(self, idx, max_new_tokes, temperature=1.0):
+        for _ in range(max_new_tokes):
+            idx_cond = idx if idx.shape[1] < self.seq_len else idx[:, -self.seq_len :]
+
+            logits = self.forward(Tensorli(idx_cond))
+            logits = logits.data[:, -1, :] / temperature
+
+            # TODO: add top_k sampling
+
+            probabilities = Tensorli(logits).softmax(-1)
+
+            # TODO implement sampling
+
+            idx = np.concatenate(
+                [idx, np.expand_dims(np.argmax(probabilities.data, axis=-1), axis=-1)], axis=-1
+            )
+
+        return idx
