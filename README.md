@@ -2,7 +2,7 @@
 <img src="logo.png" alt="logo" width="200"/>
 
 <h3>
-Absolute minimalistic implementation of a GPT-like transformer using only `numpy` (<650 lines).
+Absolute minimalistic implementation of a GPT-like transformer using only numpy (<650 lines).
 </h3>
 </div>
 
