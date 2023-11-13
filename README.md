@@ -12,8 +12,9 @@ The implementation includes:
 All that is "needed" to train and execute a GPT-like transformer model.
 
 ```
-Everything else is optimizations.
+Everything else is optimizations[^1].
 ```
+[^1]: *Which are very important, but not the focus of this project.*
 
 ## Example
 
@@ -33,7 +34,7 @@ out = transformer(x)
 
 ## Naming
 
-In the region where I grew up, a word for "little" is used as a suffix \[[1](https://de.wikipedia.org/wiki/-li)\]. For example, "little dog" would be "dogli". I thought it would be a nice name for a minimalistic implementation of a neural network library.
+In the region where I grew up, a word for "little" is used as a suffix \[[2](https://de.wikipedia.org/wiki/-li)\]. For example, "little dog" would be "dogli". I thought it would be a nice name for a minimalistic implementation of a neural network library.
 
 ### Caveats
 
