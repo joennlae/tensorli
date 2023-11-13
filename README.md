@@ -11,10 +11,9 @@ The implementation includes:
 
 All that is "needed" to train and execute a GPT-like transformer model.
 
-```
-Everything else is optimizations[^1].
-```
-[^1]: *Which are very important, but not the focus of this project.*
+`Everything else is optimizations`<sup>[1](#myfootnote1)</sup>.
+
+<a name="myfootnote1">1</a>: *Which are very important, but not the focus of this project.*
 
 ## Example
 
