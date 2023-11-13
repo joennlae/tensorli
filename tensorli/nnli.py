@@ -48,12 +48,12 @@ class Headli(Moduli):
         self.key = Linearli(embd_dim, head_size, bias=False)
         self.query = Linearli(embd_dim, head_size, bias=False)
         self.value = Linearli(embd_dim, head_size, bias=False)
-        self.where_condition = Tensorli(np.tril(np.ones((seq_len, seq_len))) > 0)
-        self.where_neg_inf = Tensorli(np.ones((seq_len, seq_len)) * np.inf * -1.0)
+        self.where_condition = np.tril(np.ones((seq_len, seq_len))) > 0
+        self.where_neg_inf = np.ones((seq_len, seq_len)) * np.inf * -1.0
         self.num_heads = embd_dim // head_size
 
     def forward(self, x: Tensorli) -> Tensorli:
-        _, _, C = x.shape  # (batch_size, seq_len, embd_dim)
+        _, T, C = x.shape  # (batch_size, seq_len (or current t), embd_dim)
         k = self.key(x)  # (batch_size, seq_len, head_size)
         q = self.query(x)  # (batch_size, seq_len, head_size)
         # compute attention scores ("affinities")
@@ -62,7 +62,7 @@ class Headli(Moduli):
         w = q @ k.transpose(-2, -1) * ((C / self.num_heads) ** -0.5)  # mul is element-wise
         # this is a decoder as we have a lower triangular with weights
         # causal self-attention
-        w = w.where(self.where_condition, self.where_neg_inf)
+        w = w.where(Tensorli(self.where_condition[:T, :T]), Tensorli(self.where_neg_inf[:T, :T]))
         w = w.softmax(-1)  # (batch_size, seq_len, seq_len)
         # perform the weighted aggregation of the values
         v = self.value(x)  # (batch_size, seq_len, head_size)
