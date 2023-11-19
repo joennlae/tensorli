@@ -46,6 +46,9 @@ class Adamli(Optimizerli):  # https://pytorch.org/docs/stable/generated/torch.op
             m_hat = self.m[i] / (1 - self.betas[0] ** self.t)
             v_hat = self.v[i] / (1 - self.betas[1] ** self.t)
             if self.weight_decay > 0.0:
-                t.data -= self.lr * m_hat / (np.sqrt(v_hat) + self.eps) + self.weight_decay * t.data
+                t.data -= (
+                    self.lr * m_hat / (np.sqrt(v_hat) + self.eps)
+                    + self.lr * self.weight_decay * t.data
+                )
             else:
                 t.data -= self.lr * m_hat / (np.sqrt(v_hat) + self.eps)
