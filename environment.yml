@@ -10,3 +10,4 @@ dependencies:
   - pylint
   - pytest
   - conda-forge::mypy
+  - numpy
