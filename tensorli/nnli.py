@@ -3,10 +3,6 @@ from tensorli.tensorli import Tensorli
 
 
 class Moduli:
-    def zero_grad(self):
-        for p in self.parameters():
-            p = np.zeros_like(p)
-
     def parameters(self) -> list[Tensorli]:
         raise NotImplementedError
 
