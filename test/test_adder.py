@@ -105,6 +105,8 @@ def deactivated_test_adder_set():
 
     train_loader = DataLoaderli(train_dataset, batch_size, random_sampling=True)
 
+    loss_data = []
+
     def train_loop(epochs=5):
         for i in range(epochs):
             for bn, batch in enumerate(train_loader):
@@ -115,15 +117,22 @@ def deactivated_test_adder_set():
 
                 loss = out.cross_entropy(y_batch)
                 print(f"Epoch {i}, batch {bn}: ", loss)
+                loss_data.append(loss.data[0].item())
                 loss.backward()
                 optimizer.step()
                 optimizer.zero_grad()
 
     train_loop(5)
+    # loss data to csv
+    loss_array = np.array(loss_data)
+    np.savetxt("loss.csv", loss_array, delimiter=",")
 
     test_loader = DataLoaderli(test_dataset, batch_size, random_sampling=False)
 
+
     def eval_helper():
+        total_correct = 0
+        total = 0
         factors = np.array([10**i for i in range(n_digits + 1)][::-1])
         for batch in test_loader:
             x_batch, _ = batch
@@ -141,8 +150,15 @@ def deactivated_test_adder_set():
             target = first_digit + second_digit
             correct = prediction == target
             print("correct", correct)
+            count_correct = correct.sum()
+            total_correct += count_correct
+            total += len(x_batch)
+        return total_correct, total
 
-    eval_helper()
+    total_correct, total = eval_helper()
+    print("total correct", total_correct)
+    print("total", total)
+    print("accuracy", total_correct / total)
 
     return 0
 
