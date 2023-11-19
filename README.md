@@ -69,6 +69,12 @@ This library is heavily inspired by the following projects:
 
 I highly recommend checking them out.
 
+## Training loss plot plot
+
+Running the test script `test/test_adder.py` will produce the following loss curve:
+
+![loss](loss.png)
+
 ### Plans & Outlook
 
 - [ ] Add Dropout
