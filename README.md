@@ -36,6 +36,23 @@ x = Tensorli(x_numpy)
 out = transformer(x)
 ```
 
+## Installation & Development
+
+```bash
+# create conda env (if you want to do it faster use mamba)
+# conda env create -f environment.yml
+# (if you want to do it faster use mamba)
+mamba env create -f environment.yml
+# activate env
+conda activate tensorli
+# python path need to be set to the root of the project
+export PYTHONPATH=$PWD
+# run all tests
+pytest
+# run specific test (verbose)
+pytest -v -rP -k "transformer"
+```
+
 ## Naming
 
 In the region where I grew up, a word for "little" is used as a suffix \[[2](https://de.wikipedia.org/wiki/-li)\]. For example, "little dog" would be "dogli". I thought it would be a nice name for a minimalistic implementation of a neural network library.
