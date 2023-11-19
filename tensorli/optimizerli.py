@@ -12,13 +12,13 @@ class Optimizerli:
     def zero_grad(self):
         for param in self.parameters:
             if param.grad is not None:
-                param.grad = Tensorli.zeros_like(param)
+                param.grad = np.zeros(param.grad.shape)
 
     def step(self):
         raise NotImplementedError
 
 
-class Adamli:  # https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#adam
+class Adamli(Optimizerli):  # https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#adam
     def __init__(
         self,
         parameters: list["Tensorli"],
@@ -27,6 +27,7 @@ class Adamli:  # https://pytorch.org/docs/stable/generated/torch.optim.Adam.html
         eps=1e-8,
         weight_decay=0.01,
     ):
+        super().__init__(parameters, lr)
         self.parameters = parameters
         self.lr = lr
         self.betas = betas
