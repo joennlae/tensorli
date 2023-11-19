@@ -115,11 +115,11 @@ def deactivated_test_adder_set():
 
                 loss = out.cross_entropy(y_batch)
                 print(f"Epoch {i}, batch {bn}: ", loss)
-                model.zero_grad()
                 loss.backward()
                 optimizer.step()
+                optimizer.zero_grad()
 
-    train_loop(1)
+    train_loop(5)
 
     test_loader = DataLoaderli(test_dataset, batch_size, random_sampling=False)
 
