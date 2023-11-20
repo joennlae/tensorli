@@ -1,0 +1,16 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Tensorli
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Jannis
+    family-names: Schönleber
+    affiliation: ETH Zürich
+    orcid: 'https://orcid.org/0009-0000-2242-5331'
+repository-code: 'https://github.com/joennlae/tensorli'
+license: MIT
